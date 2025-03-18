@@ -15,9 +15,7 @@ def run_summarize():
     load_dotenv()
     os.environ['OPENAI_API_KEY'] = os.getenv('API_KEY')
     documents = SimpleDirectoryReader('./data').load_data()
-    
-    # print(response)
-    summarizer = TreeSummarize(verbose=True)
+    summarizer = TreeSummarize()
     responses = []
     for i in range(len(documents)):
         response = summarizer.get_response('''For each document, return a list of users who logged in and logged out. Also provide a list of specific 
@@ -45,21 +43,22 @@ def main():
     dates  : Dict[str, List[str]] = {}
         
     masked_data = [masker.mask_log_entry(line) for line in data]
-    for line in masked_data:
+    for line in masked_data: #Splits data up by day and removes redundant date information
         date = (line.split(' ')[0])[1:]
         
         if date not in dates:
             dates[date] = []
         line = line.split(']')[1]
         dates[date].append(line)
-    for date in dates:
+    for date in dates: #Makes document for each day
         with open(f'data/{date}.txt', 'w') as file:
             file.write(f'Date: {date}\n')
             for line in dates[date]:
                 file.write(line) 
-    response = run_summarize()
+    response = run_summarize() #List of summaries for each document
     for i in range(len(response)):
         response[i] = masker.unmask_log_entry(response[i])
+        print(response[i])
         
     return
     
